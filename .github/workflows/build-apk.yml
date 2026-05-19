@@ -1,0 +1,78 @@
+name: Build YouTube No-Shorts APK
+
+on:
+  push:
+    branches: [claude/youtube-clone-no-shorts-KVxfD]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Android SDK 34 + NDK
+        run: |
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager \
+            "build-tools;34.0.0" \
+            "platforms;android-34" \
+            "ndk;26.1.10909125" > /dev/null 2>&1
+
+      - name: Init React Native 0.73 project
+        env:
+          CI: true
+        run: |
+          npx react-native@0.73.6 init YouTubeNoShorts \
+            --template react-native-template-typescript \
+            --skip-install
+
+      - name: Overlay app source files
+        run: |
+          cp -r youtube-no-shorts/src YouTubeNoShorts/
+          cp youtube-no-shorts/App.tsx YouTubeNoShorts/App.tsx
+          cp youtube-no-shorts/package.json YouTubeNoShorts/package.json
+          cp -f youtube-no-shorts/android/build.gradle YouTubeNoShorts/android/build.gradle
+          cp -f youtube-no-shorts/android/app/build.gradle YouTubeNoShorts/android/app/build.gradle
+          cp -f youtube-no-shorts/android/app/src/main/AndroidManifest.xml \
+            YouTubeNoShorts/android/app/src/main/AndroidManifest.xml
+          cp -f youtube-no-shorts/android/app/src/main/res/values/strings.xml \
+            YouTubeNoShorts/android/app/src/main/res/values/strings.xml
+
+      - name: Install npm dependencies
+        working-directory: YouTubeNoShorts
+        run: npm install
+
+      - name: Print debug keystore SHA-1 (add this to Google Cloud Console)
+        working-directory: YouTubeNoShorts/android
+        run: |
+          chmod +x gradlew
+          ./gradlew signingReport 2>&1 | grep -A5 "Variant: debug" | grep SHA1
+
+      - name: Build release APK
+        working-directory: YouTubeNoShorts/android
+        run: |
+          ./gradlew assembleRelease --no-daemon
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-no-shorts-apk
+          path: YouTubeNoShorts/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 14
+          if-no-files-found: error
