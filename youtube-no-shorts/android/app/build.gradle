@@ -1,7 +1,8 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply plugin: "com.google.gms.google-services"
+
+// NOTE: No google-services plugin needed — sign-in uses webClientId directly.
 
 react {
     autolinkLibrariesWithApp()
@@ -38,7 +39,6 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            // TODO: configure a release keystore before distributing
             signingConfig signingConfigs.debug
         }
     }

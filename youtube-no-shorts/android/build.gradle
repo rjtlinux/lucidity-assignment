@@ -14,6 +14,6 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.3.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("com.google.gms:google-services:4.4.1")
+        // No google-services classpath needed
     }
 }

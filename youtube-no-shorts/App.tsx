@@ -11,11 +11,8 @@ import VideoScreen from './src/screens/VideoScreen';
 import {RootStackParamList} from './src/types';
 import {isSignedIn} from './src/services/auth';
 
-// ─── REQUIRED SETUP ───────────────────────────────────────────────────────────
-// Replace with your OAuth 2.0 Web Client ID from Google Cloud Console.
-// See README.md for full instructions.
-const WEB_CLIENT_ID = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
-// ──────────────────────────────────────────────────────────────────────────────
+const WEB_CLIENT_ID =
+  '675272878793-vg5jggu5m2j8kl0q32d75p6i6bn3rt7m.apps.googleusercontent.com';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,6 +23,7 @@ export default function App() {
     GoogleSignin.configure({
       webClientId: WEB_CLIENT_ID,
       scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
+      offlineAccess: false,
     });
     isSignedIn().then(setLoggedIn);
   }, []);
